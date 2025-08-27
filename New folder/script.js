@@ -52,36 +52,24 @@ function initScrollAnimations() {
     const observer = new IntersectionObserver(function(entries) {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
             }
         });
     }, observerOptions);
     
-    // Observe all elements that should animate on scroll
+    // Observe and prepare elements with reveal utility
     const animateElements = document.querySelectorAll('.service-card, .team-member, .stat-item, .info-item');
-    animateElements.forEach(el => observer.observe(el));
-    
-    // Add CSS for animate-in class
-    const style = document.createElement('style');
-    style.textContent = `
-        .service-card, .team-member, .stat-item, .info-item {
-            opacity: 0;
-            transform: translateY(50px);
-            transition: all 0.6s ease-out;
-        }
-        
-        .animate-in {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    `;
-    document.head.appendChild(style);
+    animateElements.forEach((el, index) => {
+        el.classList.add('reveal');
+        el.style.transitionDelay = `${Math.min(index * 80, 480)}ms`;
+        observer.observe(el);
+    });
 }
 
 // Counter animation for statistics
 function initCounterAnimation() {
     const counters = document.querySelectorAll('[data-count]');
-    const speed = 200;
     
     const observer = new IntersectionObserver(function(entries) {
         entries.forEach(entry => {
@@ -97,17 +85,25 @@ function initCounterAnimation() {
     counters.forEach(counter => observer.observe(counter));
     
     function animateCounter(element, target) {
-        let count = 0;
-        const increment = Math.ceil(target / speed);
-        
-        const timer = setInterval(() => {
-            count += increment;
-            if (count >= target) {
-                count = target;
-                clearInterval(timer);
+        if (prefersReducedMotion()) {
+            element.textContent = target.toLocaleString('ar-SA');
+            return;
+        }
+        const durationMs = 1200;
+        const start = performance.now();
+        const startValue = 0;
+
+        function update(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / durationMs, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(startValue + (target - startValue) * eased);
+            element.textContent = current.toLocaleString('ar-SA');
+            if (progress < 1) {
+                requestAnimationFrame(update);
             }
-            element.textContent = count.toLocaleString('ar-SA');
-        }, 1);
+        }
+        requestAnimationFrame(update);
     }
 }
 
@@ -161,6 +157,9 @@ function initFormValidation() {
 
 // Floating animations
 function initFloatingAnimations() {
+    if (prefersReducedMotion()) {
+        return;
+    }
     // Add random movement to floating shapes
     const shapes = document.querySelectorAll('.shape');
     
@@ -208,7 +207,7 @@ function initSmoothScrolling() {
                 
                 window.scrollTo({
                     top: offsetTop,
-                    behavior: 'smooth'
+                    behavior: prefersReducedMotion() ? 'auto' : 'smooth'
                 });
             }
         });
@@ -217,6 +216,9 @@ function initSmoothScrolling() {
 
 // Parallax effect for hero section
 function initParallaxEffect() {
+    if (prefersReducedMotion()) {
+        return;
+    }
     const hero = document.querySelector('.hero');
     const shapes = document.querySelectorAll('.shape');
     
@@ -234,9 +236,15 @@ function initParallaxEffect() {
 // Initialize typing effect for hero text
 function initTypingEffect() {
     const heroText = document.querySelector('.hero-text h1');
+    if (!heroText) {
+        return;
+    }
     const originalText = heroText.textContent;
     const words = originalText.split(' ');
     
+    if (prefersReducedMotion()) {
+        return;
+    }
     heroText.textContent = '';
     
     words.forEach((word, index) => {
@@ -282,9 +290,15 @@ window.addEventListener('load', function() {
     initLazyLoading();
     
     // Preload animations
-    setTimeout(() => {
+    if (prefersReducedMotion()) {
+        document.body.style.transition = 'none';
+        document.body.style.opacity = '1';
         document.body.classList.add('loaded');
-    }, 100);
+    } else {
+        setTimeout(() => {
+            document.body.classList.add('loaded');
+        }, 100);
+    }
 });
 
 // Add CSS for loaded state
@@ -326,7 +340,7 @@ document.head.appendChild(loadedStyle);
 
 // Custom cursor effect (optional)
 function initCustomCursor() {
-    if (window.innerWidth > 768) { // Only on desktop
+    if (window.innerWidth > 768 && !prefersReducedMotion() && !isTouchDevice()) { // Only on desktop and if motion allowed
         const cursorDot = document.createElement('div');
         const cursorOutline = document.createElement('div');
         cursorDot.className = 'cursor-dot';
@@ -384,4 +398,9 @@ function isTouchDevice() {
 
 if (isTouchDevice()) {
     document.body.classList.add('touch-device');
+}
+
+// Reduced motion detection
+function prefersReducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
