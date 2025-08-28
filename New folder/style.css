@@ -13,6 +13,19 @@ body {
     overflow-x: hidden;
 }
 
+.container img,
+img,
+svg,
+video {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Improve anchor scrolling with fixed navbar */
+section {
+    scroll-margin-top: 90px;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -105,6 +118,11 @@ body {
     background: #333;
     margin: 3px 0;
     transition: 0.3s;
+}
+
+/* Increase mobile touch targets */
+.nav-menu a {
+    padding: 0.75rem 1rem;
 }
 
 /* Hero Section */
@@ -829,6 +847,10 @@ section {
         text-align: center;
     }
     
+    .hero-image {
+        height: 260px;
+    }
+    
     .hero-text h1 {
         font-size: 2.5rem;
     }
@@ -851,6 +873,34 @@ section {
     .team-grid {
         grid-template-columns: 1fr;
     }
+
+    /* Reduce general spacing and adjust container padding on mobile */
+    section {
+        padding: 3rem 0;
+    }
+
+    .container {
+        padding: 0 16px;
+    }
+
+    /* Tweak sizes for better fit */
+    .nav-logo h2 {
+        font-size: 1.4rem;
+    }
+
+    .about-image {
+        height: 280px;
+    }
+
+    .contact-form button {
+        padding: 0.9rem 1.6rem;
+        font-size: 1rem;
+    }
+
+    .whatsapp-link {
+        width: 52px;
+        height: 52px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -865,5 +915,40 @@ section {
     .btn {
         padding: 0.8rem 1.5rem;
         font-size: 1rem;
+    }
+
+    /* Extra-small devices refinements */
+    section {
+        padding: 2rem 0;
+    }
+
+    .nav-logo h2 {
+        font-size: 1.2rem;
+    }
+
+    .hero-image {
+        height: 200px;
+    }
+
+    .about-image {
+        height: 200px;
+    }
+
+    .whatsapp-link {
+        width: 48px;
+        height: 48px;
+    }
+}
+
+@media (max-width: 360px) {
+    /* Safeguard against ultra-small widths */
+    .section-title {
+        font-size: 1.6rem;
+    }
+    .hero-text p {
+        font-size: 1.05rem;
+    }
+    .service-card {
+        padding: 1.5rem;
     }
 }
